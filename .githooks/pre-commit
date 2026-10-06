@@ -1,0 +1,28 @@
+#!/bin/sh
+SERVICES="user hotel booking payment notification minio"
+ROOT=$(git rev-parse --show-toplevel)
+STAGED=$(git diff --cached --name-only --diff-filter=ACMR)
+
+for s in $SERVICES; do
+  echo "$STAGED" | grep -q "^$s/" || continue
+  [ -f "$ROOT/$s/gradlew" ] || continue
+  echo "== $s =="
+  cd "$ROOT/$s" || exit 1
+
+  # 1. check format; if it fails, format and re-stage the files
+  if ! ./gradlew spotlessCheck -q; then
+    echo "Format check failed, formatting $s..."
+    ./gradlew spotlessApply -q || exit 1
+    echo "$STAGED" | grep "^$s/.*\.java$" | while read -r f; do
+      [ -f "$ROOT/$f" ] && git add "$ROOT/$f"
+    done
+  fi
+
+  # 2. compile main and test code
+  ./gradlew compileJava compileTestJava -q || { echo "Compile failed in $s"; exit 1; }
+
+  # 3. unit tests only (integration tests are excluded from `test`)
+  ./gradlew test -q || { echo "Unit tests failed in $s"; exit 1; }
+done
+
+exit 0

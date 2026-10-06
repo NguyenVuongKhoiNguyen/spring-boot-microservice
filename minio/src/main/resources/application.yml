@@ -1,0 +1,25 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: minio
+  config:
+    import: optional:file:../.env[.properties]
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+minio:
+  endpoint: ${MINIO_ENDPOINT}
+  public-endpoint: ${MINIO_ENDPOINT}
+  access-key: ${MINIO_ROOT_USER}
+  secret-key: ${MINIO_ROOT_PASSWORD}
+  bucket-name: ${MINIO_BUCKET_NAME}
+  link-expiry: ${MINIO_LINK_EXPIRY:3600}

@@ -22,6 +22,15 @@ public class ImageController {
   public ResponseEntity<ImageResponse> uploadImage(
       @RequestParam("file") MultipartFile file, @RequestParam("folder") String folder) {
 
+    if (file.isEmpty()) {
+      throw new org.springframework.web.server.ResponseStatusException(
+          org.springframework.http.HttpStatus.BAD_REQUEST, "File cannot be empty");
+    }
+
+    if (file.getSize() > 10 * 1024 * 1024) {
+      throw new org.springframework.web.multipart.MaxUploadSizeExceededException(10 * 1024 * 1024);
+    }
+
     String objectKey = minioService.uploadImage(file, folder);
     String url = minioService.getPresignedUrl(objectKey);
 

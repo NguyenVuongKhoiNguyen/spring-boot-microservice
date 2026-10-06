@@ -26,6 +26,16 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
   }
 
+  @ExceptionHandler({
+    org.springframework.web.multipart.support.MissingServletRequestPartException.class,
+    org.springframework.web.bind.MissingServletRequestParameterException.class
+  })
+  public ResponseEntity<ErrorResponse> handleMissingParams(Exception ex) {
+    ErrorResponse response =
+        new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", ex.getMessage());
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+  }
+
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
     ErrorResponse response =

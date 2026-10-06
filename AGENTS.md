@@ -182,3 +182,4 @@ tasks.register('integrationTest', Test) {
 - Any "get list" endpoint must follow the pattern in `filter-and-paginate.md` (project root). Read it before writing a `filterAndPaginate` method or a `PageResponse`.
 - Service unit tests must follow `service-unit-test.md` (project root). Read it before writing any `*ServiceTest`.
 - Repository integration tests must follow `repository-integration-test.md` (project root). Read it before writing any `*RepositoryTest`.
+- MinIO service unit tests follow `minio-service-unit-test.md`. MinIO controller integration tests follow `minio-controller-integration-test.md`. Read the matching file before writing them.

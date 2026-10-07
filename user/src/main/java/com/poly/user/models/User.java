@@ -31,9 +31,6 @@ public class User {
   @Column(name = "phone", length = 30)
   private String phone;
 
-  @Column(name = "role", nullable = false, length = 50)
-  private String role;
-
   @Column(name = "active", nullable = false)
   private Boolean active;
 

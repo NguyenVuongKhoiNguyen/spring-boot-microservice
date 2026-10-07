@@ -16,7 +16,6 @@ public final class UserSpecification {
       String passwordHash,
       String fullName,
       String phone,
-      String role,
       Boolean active,
       Boolean delIf,
       Instant createdAtFrom,
@@ -35,8 +34,6 @@ public final class UserSpecification {
         predicates.add(cb.like(cb.lower(root.get("fullName")), "%" + fullName.toLowerCase() + "%"));
       if (phone != null && !phone.isBlank())
         predicates.add(cb.like(cb.lower(root.get("phone")), "%" + phone.toLowerCase() + "%"));
-      if (role != null && !role.isBlank())
-        predicates.add(cb.like(cb.lower(root.get("role")), "%" + role.toLowerCase() + "%"));
       if (active != null) predicates.add(cb.equal(root.get("active"), active));
       if (delIf != null) predicates.add(cb.equal(root.get("delIf"), delIf));
       if (createdAtFrom != null)

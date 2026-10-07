@@ -22,8 +22,7 @@ Hotel booking backend built as Spring Boot microservices.
 | `discovery-server` | Eureka registry (`@EnableEurekaServer`) | 8761 |
 | `api-gateway` | Spring Cloud Gateway, single entry point | 8080 |
 | `user` | users, user images, device tokens | 8081 |
-| `hotel` | hotels, hotel images, rooms, room types | 8082 |
-| `booking` | bookings, booking status history | 8083 |
+| `hotel` | hotels, hotel images, rooms, room types, bookings, booking status history | 8082 |
 | `payment` | payments | 8084 |
 | `notification` | notifications | 8085 |
 | `minio` | images / object storage | 8086 |
@@ -178,7 +177,7 @@ tasks.register('integrationTest', Test) {
 - If a test's type is unclear (unit or integration), ask me before writing it.
 
 ## Reference docs
-- Infrastructure (Postgres, MinIO) runs from `docker-compose.yml` in the project root: `docker compose up -d`. Never run `docker compose down -v` (it deletes the data volumes). Schema changes live only in the Flyway folder run by `flyway-init`. Spring services are not in the compose file; run them with `gradlew bootRun`.
+- Infrastructure runs from inside each service. Each database uses `docker-compose.db.yaml` inside its respective service folder. MinIO uses `docker-compose.minio.yaml` inside the `minio` folder. Schema changes live only in the Flyway folders run by `flyway-init`. Spring services are not in the compose files; run them with `gradlew bootRun`.
 - Any "get list" endpoint must follow the pattern in `filter-and-paginate.md` (project root). Read it before writing a `filterAndPaginate` method or a `PageResponse`.
 - Service unit tests must follow `service-unit-test.md` (project root). Read it before writing any `*ServiceTest`.
 - Repository integration tests must follow `repository-integration-test.md` (project root). Read it before writing any `*RepositoryTest`.

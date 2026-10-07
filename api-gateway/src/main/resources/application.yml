@@ -13,11 +13,7 @@ spring:
         - id: hotel
           uri: lb://hotel
           predicates:
-            - Path=/api/hotels/**
-        - id: booking
-          uri: lb://booking
-          predicates:
-            - Path=/api/bookings/**
+            - Path=/api/hotels/**,/api/bookings/**,/api/bookingstatushistorys/**
         - id: minio
           uri: lb://minio
           predicates:

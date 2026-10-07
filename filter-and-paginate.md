@@ -2,7 +2,34 @@
 
 Every "get list" endpoint uses this pattern: **PageResponse + JPA Specification + Pageable**. Method name is always `filterAndPaginate`. Every column of the table is an optional filter parameter.
 
-### Step 0: create PageResponse first (once per service)
+### Step 0: get the real columns from the database (postgres MCP server)
+Before writing any Specification, read each table's actual columns through the **postgres MCP server**. Never guess column names or types, and never take them from memory.
+
+1. Check the MCP connection first: list the tables in the database. If the MCP server is unavailable or the table isn't found, **stop and ask me**. Do not fall back to guessing from the entity.
+2. Get the exact table name from the entity's `@Table(name = "...")`.
+3. Run this read-only query for each table:
+```sql
+   SELECT column_name, data_type, is_nullable
+   FROM information_schema.columns
+   WHERE table_name = '<table_name>'
+   ORDER BY ordinal_position;
+```
+4. Compare the result with the entity's fields. Map each snake_case column to its camelCase field (`star_rating` → `starRating`, `hotel_id` → relation `hotel`, filter param `hotelId`). The Specification uses the **entity field name** in `root.get("...")`, not the column name.
+5. If a column exists in the database but not in the entity, or the entity has a field with no column, **don't add or skip it silently. Report it and ask me.**
+6. Pick the filter type from the column's `data_type`:
+   - `character varying`, `text`, `varchar`: String, case-insensitive contains
+   - `boolean`, enum types, `uuid`, ID columns (`bigint` primary and foreign keys), `sort_order`: exact match
+   - `integer`, `smallint`, `numeric`, `decimal`, `double precision`: range `<field>From` / `<field>To`
+   - `date`, `time`, `timestamp`, `timestamptz`: range `<field>From` / `<field>To`
+7. Skip sensitive columns (password hashes, tokens, secrets). Ask me if unsure.
+8. Only filter the tables the service owns. Do not build filters for another service's tables, even though they share the database.
+
+MCP rules:
+- **Read-only.** Only run `SELECT` against `information_schema` (or the table, if I ask). Never run `INSERT`, `UPDATE`, `DELETE`, `ALTER`, `DROP` or `CREATE` through MCP.
+- Do not change the database schema. Schema changes live only in the Flyway scripts in `database/migration/`.
+- Do not print real row data or secrets in your report.
+
+### Step 1: create PageResponse first (once per service)
 Create it before any `filterAndPaginate` method. Each service gets its own copy, since services share no code. If it already exists in the service, reuse it and do not recreate it.
 
 **dtos/responses/`PageResponse`**
@@ -80,10 +107,11 @@ public PageResponse<<Entity>Response> filterAndPaginate(
 Request example: `GET /api/<entity>?column2=abc&page=0&size=20&sort=column1,desc`
 
 ### Rules
-- **PageResponse comes first.** Check that `dtos/responses/PageResponse` exists in the service before writing any `filterAndPaginate`.
+- **Step 0 comes first.** Read the columns through the postgres MCP server before writing any Specification. State which tables and columns you found when you report back.
+- **PageResponse comes second.** Check that `dtos/responses/PageResponse` exists in the service before writing any `filterAndPaginate`.
 - **Return type is always `PageResponse<<Entity>Response>`.** Never return an entity, `Page`, `List` or `Slice` from the service or controller.
 - **Entities stay inside the repository and service.** The Specification and repository work on entities. The service converts to the Response DTO with `<Entity>Mapper` before returning.
-- **Parameters = the table's columns.** Use the exact field names from the model. Do not invent filters.
+- **Parameters = the table's columns, as returned by MCP.** Use the exact field names from the model that correspond to those columns. Do not invent filters.
 - **All filters are optional.** A null or blank value is skipped, and no filters returns everything, paginated.
 - **Filter by type:**
   - String: case-insensitive `like` (contains)
@@ -95,4 +123,4 @@ Request example: `GET /api/<entity>?column2=abc&page=0&size=20&sort=column1,desc
 - Set `spring.data.web.pageable.max-page-size: 100` and `default-page-size: 20` in `application.yml`.
 - No filtering logic in controllers or services. It lives only in the Specification class.
 - No new folders: `PageResponse` goes in `dtos/responses/`, the Specification class in `repositories/`.
-- If a column's type or filtering behavior is unclear, ask me before writing code.
+- If a column's type or filtering behavior is unclear, or the database and the entity disagree, ask me before writing code.

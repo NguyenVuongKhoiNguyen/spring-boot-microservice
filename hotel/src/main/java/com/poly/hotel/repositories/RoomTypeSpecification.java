@@ -22,13 +22,13 @@ public final class RoomTypeSpecification {
       BigDecimal pricePerNightFrom,
       BigDecimal pricePerNightTo,
       Boolean active,
-      Boolean delIf,
       Instant createdAtFrom,
       Instant createdAtTo,
       Instant updatedAtFrom,
       Instant updatedAtTo) {
     return (root, query, cb) -> {
       List<Predicate> predicates = new ArrayList<>();
+      predicates.add(cb.equal(root.get("delIf"), false));
       if (id != null) predicates.add(cb.equal(root.get("id"), id));
       if (hotelId != null) predicates.add(cb.equal(root.get("hotel").get("id"), hotelId));
       if (name != null && !name.isBlank())
@@ -47,7 +47,6 @@ public final class RoomTypeSpecification {
       if (pricePerNightTo != null)
         predicates.add(cb.lessThanOrEqualTo(root.get("pricePerNight"), pricePerNightTo));
       if (active != null) predicates.add(cb.equal(root.get("active"), active));
-      if (delIf != null) predicates.add(cb.equal(root.get("delIf"), delIf));
       if (createdAtFrom != null)
         predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), createdAtFrom));
       if (createdAtTo != null)

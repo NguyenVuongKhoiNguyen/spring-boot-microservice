@@ -15,11 +15,11 @@ public final class BookingStatusHistorySpecification {
       Long bookingId,
       String oldStatus,
       String newStatus,
-      Boolean delIf,
       Instant changedAtFrom,
       Instant changedAtTo) {
     return (root, query, cb) -> {
       List<Predicate> predicates = new ArrayList<>();
+      predicates.add(cb.equal(root.get("delIf"), false));
       if (id != null) predicates.add(cb.equal(root.get("id"), id));
       if (bookingId != null) predicates.add(cb.equal(root.get("booking").get("id"), bookingId));
       if (oldStatus != null && !oldStatus.isBlank())
@@ -28,7 +28,6 @@ public final class BookingStatusHistorySpecification {
       if (newStatus != null && !newStatus.isBlank())
         predicates.add(
             cb.like(cb.lower(root.get("newStatus")), "%" + newStatus.toLowerCase() + "%"));
-      if (delIf != null) predicates.add(cb.equal(root.get("delIf"), delIf));
       if (changedAtFrom != null)
         predicates.add(cb.greaterThanOrEqualTo(root.get("changedAt"), changedAtFrom));
       if (changedAtTo != null)

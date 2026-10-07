@@ -26,14 +26,13 @@ public final class BookingSpecification {
       String status,
       BigDecimal totalPriceFrom,
       BigDecimal totalPriceTo,
-      String specialRequest,
-      Boolean delIf,
       Instant createdAtFrom,
       Instant createdAtTo,
       Instant updatedAtFrom,
       Instant updatedAtTo) {
     return (root, query, cb) -> {
       List<Predicate> predicates = new ArrayList<>();
+      predicates.add(cb.equal(root.get("delIf"), false));
       if (id != null) predicates.add(cb.equal(root.get("id"), id));
       if (userId != null) predicates.add(cb.equal(root.get("userId"), userId));
       if (hotelId != null) predicates.add(cb.equal(root.get("hotelId"), hotelId));
@@ -50,16 +49,12 @@ public final class BookingSpecification {
         predicates.add(cb.greaterThanOrEqualTo(root.get("guestCount"), guestCountFrom));
       if (guestCountTo != null)
         predicates.add(cb.lessThanOrEqualTo(root.get("guestCount"), guestCountTo));
-      if (status != null) predicates.add(cb.equal(root.get("status"), status));
+      if (status != null && !status.isBlank())
+        predicates.add(cb.like(cb.lower(root.get("status")), "%" + status.toLowerCase() + "%"));
       if (totalPriceFrom != null)
         predicates.add(cb.greaterThanOrEqualTo(root.get("totalPrice"), totalPriceFrom));
       if (totalPriceTo != null)
         predicates.add(cb.lessThanOrEqualTo(root.get("totalPrice"), totalPriceTo));
-      if (specialRequest != null && !specialRequest.isBlank())
-        predicates.add(
-            cb.like(
-                cb.lower(root.get("specialRequest")), "%" + specialRequest.toLowerCase() + "%"));
-      if (delIf != null) predicates.add(cb.equal(root.get("delIf"), delIf));
       if (createdAtFrom != null)
         predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), createdAtFrom));
       if (createdAtTo != null)

@@ -51,6 +51,7 @@ Rules:
 - Folder names are plural.
 - `api-gateway` and `discovery-server` do not use this layout. They stay config-only.
 
+
 ## Architecture rules
 - Each business service sets `spring.application.name` to its folder name (`user`, `hotel`, ...).
 - Every service registers with Eureka: `eureka.client.service-url.defaultZone: http://localhost:8761/eureka`.
@@ -112,6 +113,12 @@ testAnnotationProcessor 'org.projectlombok:lombok'
 Integration tests need Docker running.
 
 ## Working rules
+
+### Imports
+- Never use a fully qualified class or annotation name inline in code. Don't write `@org.hibernate.annotations.OnDelete(...)`, `java.util.List<...>` or `jakarta.persistence.Entity`.
+- Add an `import` at the top of the file first, then use the short name: `import org.hibernate.annotations.OnDelete;` followed by `@OnDelete(...)`.
+- If two classes share a short name, import one and write the other fully qualified. This is the only exception.
+- No wildcard imports, except `jakarta.persistence.*` where the file already uses it. Remove imports you don't use.
 
 ### Keep AGENTS.md up to date
 - After you finish building or changing anything (a new service, model, endpoint, dependency, folder, port, config or pattern file), update this file **before** reporting the task as done.
@@ -175,6 +182,27 @@ tasks.register('integrationTest', Test) {
 - Run both with `gradlew test integrationTest`.
 - When you write or run tests, use the matching task. Never run integration tests with `gradlew test`, and never skip the tag.
 - If a test's type is unclear (unit or integration), ask me before writing it.
+
+### Workflow for every coding task
+Follow this loop for every feature or change:
+
+1. **Build.** Write or change the production code.
+2. **Compile.** Run `gradlew compileJava` inside the service folder.
+   - Fails: go back to step 1 and fix the code.
+   - Passes: go to step 3.
+3. **Create tests.** Write the unit tests (services layer) and the integration tests (repositories and controllers layers), following `service-unit-test.md` and `repository-intergration-test.md`. Compile the test code with `gradlew compileTestJava`. If it fails, fix the tests and retry.
+4. **Run the tests.** Run `gradlew test` (unit), then `gradlew integrationTest` (integration, Docker must be running).
+   - Any test fails: go back to step 1, fix the production code, and run the whole loop again from the top.
+   - All pass: **stop** and report the results.
+
+Rules:
+- On a repeat pass, update the existing test files. Don't create duplicates.
+- Never make a test pass by weakening it: don't delete it, skip it, loosen its assertions or change it just to match a bug. If you think a test is wrong, tell me and ask first.
+- Never revert or undo my code to make something pass (see "Current codebase is the source of truth").
+- Run each command and read its real output. Don't say something passed without running it. Never write or run scripts to do this.
+- If Docker isn't running, stop and tell me. That isn't a test failure.
+- If the loop goes round 3 times without passing, stop and report what keeps failing and what you tried. Ask me before continuing.
+- When you stop, report: files changed, compile result, and the number of unit and integration tests passed, failed and skipped.
 
 ## Reference docs
 - Infrastructure runs from inside each service. Each database uses `docker-compose.db.yaml` inside its respective service folder. MinIO uses `docker-compose.minio.yaml` inside the `minio` folder. Schema changes live only in the Flyway folders run by `flyway-init`. Spring services are not in the compose files; run them with `gradlew bootRun`.

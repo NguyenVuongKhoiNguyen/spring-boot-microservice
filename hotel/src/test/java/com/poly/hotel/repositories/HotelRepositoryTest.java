@@ -134,7 +134,7 @@ class HotelRepositoryTest {
           repository.findAll(
               HotelSpecification.filter(
                   null, null, null, null, null, null, null, null, null, null, null, null, null,
-                  null, null, null, null, null, null, null),
+                  null, null, null, null, null, null),
               PageRequest.of(0, 10));
 
       assertThat(page.getContent()).hasSize(2);
@@ -149,7 +149,7 @@ class HotelRepositoryTest {
           repository.findAll(
               HotelSpecification.filter(
                   null, "lph", null, null, null, null, null, null, null, null, null, null, null,
-                  null, null, null, null, null, null, null),
+                  null, null, null, null, null, null),
               PageRequest.of(0, 10));
 
       assertThat(page.getContent()).hasSize(1);
@@ -164,7 +164,7 @@ class HotelRepositoryTest {
           repository.findAll(
               HotelSpecification.filter(
                   null, null, null, null, null, null, null, null, 4, 6, null, null, null, null,
-                  null, null, null, null, null, null),
+                  null, null, null, null, null),
               PageRequest.of(0, 10));
 
       assertThat(page.getContent()).hasSize(1);
@@ -178,7 +178,7 @@ class HotelRepositoryTest {
           repository.findAll(
               HotelSpecification.filter(
                   null, "Hot", null, null, null, null, null, null, 5, 5, null, null, null, null,
-                  true, false, null, null, null, null),
+                  true, null, null, null, null),
               PageRequest.of(0, 10));
 
       assertThat(page.getContent()).hasSize(1);
@@ -192,7 +192,7 @@ class HotelRepositoryTest {
           repository.findAll(
               HotelSpecification.filter(
                   null, "NoMatch", null, null, null, null, null, null, null, null, null, null, null,
-                  null, null, null, null, null, null, null),
+                  null, null, null, null, null, null),
               PageRequest.of(0, 10));
 
       assertThat(page.getContent()).isEmpty();
@@ -212,7 +212,7 @@ class HotelRepositoryTest {
           repository.findAll(
               HotelSpecification.filter(
                   null, null, null, null, null, null, null, null, null, null, null, null, null,
-                  null, null, null, null, null, null, null),
+                  null, null, null, null, null, null),
               PageRequest.of(0, 2));
 
       assertThat(page.getContent()).hasSize(2);
@@ -230,7 +230,7 @@ class HotelRepositoryTest {
           repository.findAll(
               HotelSpecification.filter(
                   null, null, null, null, null, null, null, null, null, null, null, null, null,
-                  null, null, null, null, null, null, null),
+                  null, null, null, null, null, null),
               PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "name")));
 
       assertThat(page.getContent().get(0).getName()).isEqualTo("A");
@@ -245,7 +245,7 @@ class HotelRepositoryTest {
           repository.findAll(
               HotelSpecification.filter(
                   null, null, null, null, null, null, null, null, null, null, null, null, null,
-                  null, null, null, null, null, null, null),
+                  null, null, null, null, null, null),
               PageRequest.of(1, 10));
 
       assertThat(page.getContent()).isEmpty();

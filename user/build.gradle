@@ -78,3 +78,15 @@ tasks.register('integrationTest', Test) {
 	}
 	shouldRunAfter tasks.named('test')
 }
+
+tasks.withType(Test).configureEach {
+	testLogging {
+		events "passed", "failed", "skipped"
+		exceptionFormat = 'full'
+	}
+	afterSuite { desc, result ->
+		if (!desc.parent) {
+			println "Tests: ${result.successfulTestCount} passed, ${result.failedTestCount} failed, ${result.skippedTestCount} skipped"
+		}
+	}
+}

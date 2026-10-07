@@ -18,13 +18,13 @@ public final class BookingNotificationSpecification {
       String type,
       Long referenceId,
       Boolean isRead,
-      Boolean delIf,
       Instant createdAtFrom,
       Instant createdAtTo,
       Instant readAtFrom,
       Instant readAtTo) {
     return (root, query, cb) -> {
       List<Predicate> predicates = new ArrayList<>();
+      predicates.add(cb.isFalse(root.get("delIf")));
       if (id != null) predicates.add(cb.equal(root.get("id"), id));
       if (userId != null) predicates.add(cb.equal(root.get("userId"), userId));
       if (title != null && !title.isBlank())
@@ -35,7 +35,6 @@ public final class BookingNotificationSpecification {
         predicates.add(cb.like(cb.lower(root.get("type")), "%" + type.toLowerCase() + "%"));
       if (referenceId != null) predicates.add(cb.equal(root.get("referenceId"), referenceId));
       if (isRead != null) predicates.add(cb.equal(root.get("isRead"), isRead));
-      if (delIf != null) predicates.add(cb.equal(root.get("delIf"), delIf));
       if (createdAtFrom != null)
         predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), createdAtFrom));
       if (createdAtTo != null)

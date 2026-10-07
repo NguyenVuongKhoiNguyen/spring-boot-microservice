@@ -1,16 +1,16 @@
 package com.poly.hotel.controllers;
 
+import com.poly.hotel.dtos.requests.HotelRequest;
 import com.poly.hotel.dtos.responses.HotelResponse;
 import com.poly.hotel.dtos.responses.PageResponse;
 import com.poly.hotel.services.HotelService;
+import jakarta.validation.Valid;
 import java.time.Instant;
 import java.time.LocalTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/hotels")
@@ -35,7 +35,6 @@ public class HotelController {
       @RequestParam(required = false) LocalTime checkOutTimeFrom,
       @RequestParam(required = false) LocalTime checkOutTimeTo,
       @RequestParam(required = false) Boolean active,
-      @RequestParam(required = false) Boolean delIf,
       @RequestParam(required = false) Instant createdAtFrom,
       @RequestParam(required = false) Instant createdAtTo,
       @RequestParam(required = false) Instant updatedAtFrom,
@@ -57,11 +56,32 @@ public class HotelController {
         checkOutTimeFrom,
         checkOutTimeTo,
         active,
-        delIf,
         createdAtFrom,
         createdAtTo,
         updatedAtFrom,
         updatedAtTo,
         pageable);
+  }
+
+  @GetMapping("/{id}")
+  public HotelResponse getById(@PathVariable Long id) {
+    return service.getById(id);
+  }
+
+  @PostMapping
+  @ResponseStatus(HttpStatus.CREATED)
+  public HotelResponse create(@Valid @RequestBody HotelRequest request) {
+    return service.create(request);
+  }
+
+  @PutMapping("/{id}")
+  public HotelResponse update(@PathVariable Long id, @Valid @RequestBody HotelRequest request) {
+    return service.update(id, request);
+  }
+
+  @DeleteMapping("/{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void delete(@PathVariable Long id) {
+    service.delete(id);
   }
 }

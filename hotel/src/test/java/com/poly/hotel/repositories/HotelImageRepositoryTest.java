@@ -187,8 +187,7 @@ class HotelImageRepositoryTest {
 
       Page<HotelImage> page =
           repository.findAll(
-              HotelImageSpecification.filter(
-                  null, hotel.getId(), "img1", true, 1, false, null, null),
+              HotelImageSpecification.filter(null, hotel.getId(), "img1", true, 1, 1, null, null),
               PageRequest.of(0, 10));
 
       assertThat(page.getContent()).hasSize(1);

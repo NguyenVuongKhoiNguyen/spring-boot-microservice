@@ -27,13 +27,13 @@ public final class HotelSpecification {
       LocalTime checkOutTimeFrom,
       LocalTime checkOutTimeTo,
       Boolean active,
-      Boolean delIf,
       Instant createdAtFrom,
       Instant createdAtTo,
       Instant updatedAtFrom,
       Instant updatedAtTo) {
     return (root, query, cb) -> {
       List<Predicate> predicates = new ArrayList<>();
+      predicates.add(cb.equal(root.get("delIf"), false));
       if (id != null) predicates.add(cb.equal(root.get("id"), id));
       if (name != null && !name.isBlank())
         predicates.add(cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%"));
@@ -63,7 +63,6 @@ public final class HotelSpecification {
       if (checkOutTimeTo != null)
         predicates.add(cb.lessThanOrEqualTo(root.get("checkOutTime"), checkOutTimeTo));
       if (active != null) predicates.add(cb.equal(root.get("active"), active));
-      if (delIf != null) predicates.add(cb.equal(root.get("delIf"), delIf));
       if (createdAtFrom != null)
         predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), createdAtFrom));
       if (createdAtTo != null)

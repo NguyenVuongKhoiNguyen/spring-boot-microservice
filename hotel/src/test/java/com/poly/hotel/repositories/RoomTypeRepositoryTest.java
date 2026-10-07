@@ -152,7 +152,7 @@ class RoomTypeRepositoryTest {
           repository.findAll(
               RoomTypeSpecification.filter(
                   null, null, null, null, null, null, null, null, null, null, null, null, null,
-                  null, null),
+                  null),
               PageRequest.of(0, 10));
 
       assertThat(page.getContent()).hasSize(2);
@@ -168,7 +168,7 @@ class RoomTypeRepositoryTest {
           repository.findAll(
               RoomTypeSpecification.filter(
                   null, null, "lph", null, null, null, null, null, null, null, null, null, null,
-                  null, null),
+                  null),
               PageRequest.of(0, 10));
 
       assertThat(page.getContent()).hasSize(1);
@@ -183,8 +183,7 @@ class RoomTypeRepositoryTest {
       Page<RoomType> page =
           repository.findAll(
               RoomTypeSpecification.filter(
-                  null, null, null, null, 1, 3, null, null, null, null, null, null, null, null,
-                  null),
+                  null, null, null, null, 1, 3, null, null, null, null, null, null, null, null),
               PageRequest.of(0, 10));
 
       assertThat(page.getContent()).hasSize(1);
@@ -202,7 +201,6 @@ class RoomTypeRepositoryTest {
               RoomTypeSpecification.filter(
                   null,
                   hotel1.getId(),
-                  null,
                   null,
                   null,
                   null,
@@ -239,7 +237,6 @@ class RoomTypeRepositoryTest {
                   null,
                   null,
                   true,
-                  false,
                   null,
                   null,
                   null,
@@ -258,7 +255,7 @@ class RoomTypeRepositoryTest {
           repository.findAll(
               RoomTypeSpecification.filter(
                   null, null, "NoMatch", null, null, null, null, null, null, null, null, null, null,
-                  null, null),
+                  null),
               PageRequest.of(0, 10));
 
       assertThat(page.getContent()).isEmpty();
@@ -279,7 +276,7 @@ class RoomTypeRepositoryTest {
           repository.findAll(
               RoomTypeSpecification.filter(
                   null, null, null, null, null, null, null, null, null, null, null, null, null,
-                  null, null),
+                  null),
               PageRequest.of(0, 2));
 
       assertThat(page.getContent()).hasSize(2);
@@ -298,7 +295,7 @@ class RoomTypeRepositoryTest {
           repository.findAll(
               RoomTypeSpecification.filter(
                   null, null, null, null, null, null, null, null, null, null, null, null, null,
-                  null, null),
+                  null),
               PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "name")));
 
       assertThat(page.getContent().get(0).getName()).isEqualTo("A");
@@ -314,7 +311,7 @@ class RoomTypeRepositoryTest {
           repository.findAll(
               RoomTypeSpecification.filter(
                   null, null, null, null, null, null, null, null, null, null, null, null, null,
-                  null, null),
+                  null),
               PageRequest.of(1, 10));
 
       assertThat(page.getContent()).isEmpty();

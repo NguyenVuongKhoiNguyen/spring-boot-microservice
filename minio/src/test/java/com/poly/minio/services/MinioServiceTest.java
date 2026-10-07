@@ -16,6 +16,7 @@ import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.StatObjectArgs;
 import io.minio.errors.ErrorResponseException;
+import io.minio.messages.ErrorResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -178,7 +179,7 @@ class MinioServiceTest {
       when(minioProperties.getBucketName()).thenReturn("test-bucket");
 
       ErrorResponseException minioEx = mock(ErrorResponseException.class);
-      io.minio.messages.ErrorResponse errRes = mock(io.minio.messages.ErrorResponse.class);
+      ErrorResponse errRes = mock(ErrorResponse.class);
       when(minioEx.errorResponse()).thenReturn(errRes);
       when(errRes.code()).thenReturn("NoSuchKey");
 

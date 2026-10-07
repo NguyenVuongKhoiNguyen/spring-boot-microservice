@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name = "room_types")
@@ -22,6 +24,7 @@ public class RoomType {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "hotel_id", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private Hotel hotel;
 
   @Column(name = "name", nullable = false, length = 100)

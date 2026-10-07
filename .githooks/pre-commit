@@ -4,7 +4,10 @@ ROOT=$(git rev-parse --show-toplevel)
 STAGED=$(git diff --cached --name-only --diff-filter=ACMR)
 
 for s in $SERVICES; do
-  echo "$STAGED" | grep -q "^$s/" || continue
+  if ! echo "$STAGED" | grep -q "^$s/"; then
+    echo "== $s: no staged changes, skipped =="
+    continue
+  fi
   [ -f "$ROOT/$s/gradlew" ] || continue
   echo "== $s =="
   cd "$ROOT/$s" || exit 1
@@ -19,10 +22,13 @@ for s in $SERVICES; do
   fi
 
   # 2. compile main and test code
-  ./gradlew compileJava compileTestJava -q || { echo "Compile failed in $s"; exit 1; }
+  ./gradlew compileJava compileTestJava || { echo "Compile failed in $s"; exit 1; }
+  echo "Compile passed in $s"
 
   # 3. unit tests only (integration tests are excluded from `test`)
-  ./gradlew test -q || { echo "Unit tests failed in $s"; exit 1; }
+  ./gradlew test || { echo "Unit tests failed in $s"; exit 1; }
+  echo "Unit tests passed in $s"
 done
 
+echo "All checks passed"
 exit 0

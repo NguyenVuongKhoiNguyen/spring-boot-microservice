@@ -6,6 +6,7 @@ import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.StatObjectArgs;
+import io.minio.errors.ErrorResponseException;
 import io.minio.http.Method;
 import jakarta.annotation.PostConstruct;
 import java.io.InputStream;
@@ -100,7 +101,7 @@ public class MinioService {
         }
       }
       return url;
-    } catch (io.minio.errors.ErrorResponseException e) {
+    } catch (ErrorResponseException e) {
       if ("NoSuchKey".equals(e.errorResponse().code())) {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found");
       }

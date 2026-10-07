@@ -1,17 +1,17 @@
 package com.poly.hotel.controllers;
 
+import com.poly.hotel.dtos.requests.BookingRequest;
 import com.poly.hotel.dtos.responses.BookingResponse;
 import com.poly.hotel.dtos.responses.PageResponse;
 import com.poly.hotel.services.BookingService;
+import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -34,8 +34,6 @@ public class BookingController {
       @RequestParam(required = false) String status,
       @RequestParam(required = false) BigDecimal totalPriceFrom,
       @RequestParam(required = false) BigDecimal totalPriceTo,
-      @RequestParam(required = false) String specialRequest,
-      @RequestParam(required = false) Boolean delIf,
       @RequestParam(required = false) Instant createdAtFrom,
       @RequestParam(required = false) Instant createdAtTo,
       @RequestParam(required = false) Instant updatedAtFrom,
@@ -55,12 +53,32 @@ public class BookingController {
         status,
         totalPriceFrom,
         totalPriceTo,
-        specialRequest,
-        delIf,
         createdAtFrom,
         createdAtTo,
         updatedAtFrom,
         updatedAtTo,
         pageable);
+  }
+
+  @GetMapping("/{id}")
+  public BookingResponse getById(@PathVariable Long id) {
+    return service.getById(id);
+  }
+
+  @PostMapping
+  @ResponseStatus(HttpStatus.CREATED)
+  public BookingResponse create(@Valid @RequestBody BookingRequest request) {
+    return service.create(request);
+  }
+
+  @PutMapping("/{id}")
+  public BookingResponse update(@PathVariable Long id, @Valid @RequestBody BookingRequest request) {
+    return service.update(id, request);
+  }
+
+  @DeleteMapping("/{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void delete(@PathVariable Long id) {
+    service.delete(id);
   }
 }

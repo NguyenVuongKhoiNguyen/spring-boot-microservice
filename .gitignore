@@ -42,3 +42,15 @@ out/
 .venv/
 scraping.py
 seeding.py
+
+### Root level files outside of services ###
+/*
+!/api-gateway/
+!/discovery-server/
+!/hotel/
+!/minio/
+!/notification/
+!/payment/
+!/user/
+!/.gitignore
+!/.githooks/

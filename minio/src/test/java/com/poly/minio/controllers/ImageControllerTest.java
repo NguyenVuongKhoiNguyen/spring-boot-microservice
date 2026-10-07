@@ -5,12 +5,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jayway.jsonpath.JsonPath;
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.StatObjectArgs;
 import java.io.ByteArrayInputStream;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -72,13 +74,13 @@ class ImageControllerTest {
         mockMvc
             .perform(multipart("/api/images").file(file).param("folder", "hotels"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.objectKey").value(org.hamcrest.Matchers.startsWith("hotels/")))
+            .andExpect(jsonPath("$.objectKey").value(Matchers.startsWith("hotels/")))
             .andExpect(jsonPath("$.url").isNotEmpty())
             .andReturn();
 
     // Check if object exists in MinIO
     String responseBody = result.getResponse().getContentAsString();
-    String objectKey = com.jayway.jsonpath.JsonPath.read(responseBody, "$.objectKey");
+    String objectKey = JsonPath.read(responseBody, "$.objectKey");
 
     minioClient.statObject(StatObjectArgs.builder().bucket(BUCKET).object(objectKey).build());
   }
@@ -91,7 +93,7 @@ class ImageControllerTest {
     mockMvc
         .perform(multipart("/api/images").file(file).param("folder", "hotels/test"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.objectKey").value(org.hamcrest.Matchers.startsWith("hotels/test/")));
+        .andExpect(jsonPath("$.objectKey").value(Matchers.startsWith("hotels/test/")));
   }
 
   @Test
@@ -106,15 +108,13 @@ class ImageControllerTest {
             .andReturn();
 
     String objectKey =
-        com.jayway.jsonpath.JsonPath.read(
-            uploadResult.getResponse().getContentAsString(), "$.objectKey");
+        JsonPath.read(uploadResult.getResponse().getContentAsString(), "$.objectKey");
 
     mockMvc
         .perform(get("/api/images/url").param("objectKey", objectKey))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.objectKey").value(objectKey))
-        .andExpect(
-            jsonPath("$.url").value(org.hamcrest.Matchers.containsString("X-Amz-Signature=")));
+        .andExpect(jsonPath("$.url").value(Matchers.containsString("X-Amz-Signature=")));
   }
 
   @Test
@@ -130,8 +130,7 @@ class ImageControllerTest {
         .perform(get("/api/images/url").param("objectKey", key))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.objectKey").value(key))
-        .andExpect(
-            jsonPath("$.url").value(org.hamcrest.Matchers.containsString("X-Amz-Signature=")));
+        .andExpect(jsonPath("$.url").value(Matchers.containsString("X-Amz-Signature=")));
   }
 
   @Test

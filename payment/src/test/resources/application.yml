@@ -3,7 +3,7 @@ spring:
     name: payment
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
 eureka:
   client:
     enabled: false

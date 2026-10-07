@@ -3,9 +3,11 @@ package com.poly.minio.exceptions;
 import com.poly.minio.dtos.responses.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
@@ -27,8 +29,8 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler({
-    org.springframework.web.multipart.support.MissingServletRequestPartException.class,
-    org.springframework.web.bind.MissingServletRequestParameterException.class
+    MissingServletRequestPartException.class,
+    MissingServletRequestParameterException.class
   })
   public ResponseEntity<ErrorResponse> handleMissingParams(Exception ex) {
     ErrorResponse response =

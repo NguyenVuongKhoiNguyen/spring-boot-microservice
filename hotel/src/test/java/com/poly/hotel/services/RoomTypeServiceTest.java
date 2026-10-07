@@ -1,18 +1,25 @@
 package com.poly.hotel.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.poly.hotel.dtos.requests.RoomTypeRequest;
 import com.poly.hotel.dtos.responses.PageResponse;
 import com.poly.hotel.dtos.responses.RoomTypeResponse;
+import com.poly.hotel.exceptions.ResourceNotFoundException;
 import com.poly.hotel.mappers.RoomTypeMapper;
+import com.poly.hotel.models.Hotel;
 import com.poly.hotel.models.RoomType;
+import com.poly.hotel.repositories.HotelRepository;
+import com.poly.hotel.repositories.RoomRepository;
 import com.poly.hotel.repositories.RoomTypeRepository;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -30,12 +37,99 @@ import org.springframework.data.jpa.domain.Specification;
 class RoomTypeServiceTest {
 
   @Mock private RoomTypeRepository repository;
+  @Mock private HotelRepository hotelRepository;
+  @Mock private RoomRepository roomRepository;
   @Mock private RoomTypeMapper mapper;
   @InjectMocks private RoomTypeService service;
 
   @Nested
   @DisplayName("CRUD")
-  class Crud {}
+  class Crud {
+    @Test
+    void create_whenValidRequest_returnsResponse() {
+      RoomTypeRequest request =
+          new RoomTypeRequest(1L, "RT", "Desc", 2, "King", BigDecimal.TEN, true);
+      Hotel hotel = new Hotel();
+      hotel.setDelIf(false);
+      RoomType entity = new RoomType();
+      RoomType saved = new RoomType();
+      RoomTypeResponse response =
+          new RoomTypeResponse(1L, 1L, "RT", "Desc", 2, "King", BigDecimal.TEN, true);
+
+      when(hotelRepository.findById(1L)).thenReturn(Optional.of(hotel));
+      when(mapper.toEntity(request)).thenReturn(entity);
+      when(repository.save(entity)).thenReturn(saved);
+      when(mapper.toResponse(saved)).thenReturn(response);
+
+      RoomTypeResponse result = service.create(request);
+
+      assertThat(result).isEqualTo(response);
+      verify(repository).save(entity);
+    }
+
+    @Test
+    void getById_whenExistsAndNotDeleted_returnsResponse() {
+      RoomType entity = new RoomType();
+      entity.setDelIf(false);
+      RoomTypeResponse response =
+          new RoomTypeResponse(1L, 1L, "RT", "Desc", 2, "King", BigDecimal.TEN, true);
+
+      when(repository.findById(1L)).thenReturn(Optional.of(entity));
+      when(mapper.toResponse(entity)).thenReturn(response);
+
+      RoomTypeResponse result = service.getById(1L);
+
+      assertThat(result).isEqualTo(response);
+    }
+
+    @Test
+    void getById_whenDeleted_throwsException() {
+      RoomType entity = new RoomType();
+      entity.setDelIf(true);
+
+      when(repository.findById(1L)).thenReturn(Optional.of(entity));
+
+      assertThatThrownBy(() -> service.getById(1L)).isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void update_whenExistsAndNotDeleted_updatesAndReturns() {
+      RoomTypeRequest request =
+          new RoomTypeRequest(1L, "RT", "Desc", 2, "King", BigDecimal.TEN, true);
+      Hotel hotel = new Hotel();
+      hotel.setDelIf(false);
+      RoomType entity = new RoomType();
+      entity.setDelIf(false);
+      RoomType saved = new RoomType();
+      RoomTypeResponse response =
+          new RoomTypeResponse(1L, 1L, "RT", "Desc", 2, "King", BigDecimal.TEN, true);
+
+      when(hotelRepository.findById(1L)).thenReturn(Optional.of(hotel));
+      when(repository.findById(1L)).thenReturn(Optional.of(entity));
+      when(repository.save(entity)).thenReturn(saved);
+      when(mapper.toResponse(saved)).thenReturn(response);
+
+      RoomTypeResponse result = service.update(1L, request);
+
+      assertThat(result).isEqualTo(response);
+      verify(mapper).updateEntity(request, entity);
+      verify(repository).save(entity);
+    }
+
+    @Test
+    void delete_whenExistsAndNotDeleted_setsDelIfToTrueAndSaves() {
+      RoomType entity = new RoomType();
+      entity.setDelIf(false);
+
+      when(repository.findById(1L)).thenReturn(Optional.of(entity));
+      when(roomRepository.existsByRoomTypeIdAndDelIfFalse(1L)).thenReturn(false);
+
+      service.delete(1L);
+
+      assertThat(entity.getDelIf()).isTrue();
+      verify(repository).save(entity);
+    }
+  }
 
   @Nested
   @DisplayName("FilterAndPaginate")
@@ -55,7 +149,7 @@ class RoomTypeServiceTest {
       PageResponse<RoomTypeResponse> result =
           service.filterAndPaginate(
               null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-              null, pageable);
+              pageable);
 
       assertThat(result.getContent()).hasSize(1);
       assertThat(result.getContent().get(0)).isEqualTo(response);
@@ -85,7 +179,6 @@ class RoomTypeServiceTest {
               BigDecimal.ZERO,
               BigDecimal.TEN,
               true,
-              false,
               null,
               null,
               null,
@@ -105,7 +198,7 @@ class RoomTypeServiceTest {
       PageResponse<RoomTypeResponse> result =
           service.filterAndPaginate(
               null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-              null, pageable);
+              pageable);
 
       assertThat(result.getContent()).isEmpty();
       assertThat(result.getTotalElements()).isEqualTo(0);

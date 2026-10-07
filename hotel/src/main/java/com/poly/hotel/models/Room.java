@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name = "rooms")
@@ -21,10 +23,12 @@ public class Room {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "hotel_id", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private Hotel hotel;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "room_type_id", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private RoomType roomType;
 
   @Column(name = "room_number", nullable = false, length = 50)

@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name = "hotel_images")
@@ -21,6 +23,7 @@ public class HotelImage {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "hotel_id", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private Hotel hotel;
 
   @Column(name = "image_url", nullable = false, length = 1000)

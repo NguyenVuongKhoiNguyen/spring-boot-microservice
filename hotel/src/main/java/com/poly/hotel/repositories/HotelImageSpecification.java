@@ -15,19 +15,22 @@ public final class HotelImageSpecification {
       Long hotelId,
       String imageUrl,
       Boolean isPrimary,
-      Integer sortOrder,
-      Boolean delIf,
+      Integer sortOrderFrom,
+      Integer sortOrderTo,
       Instant createdAtFrom,
       Instant createdAtTo) {
     return (root, query, cb) -> {
       List<Predicate> predicates = new ArrayList<>();
+      predicates.add(cb.equal(root.get("delIf"), false));
       if (id != null) predicates.add(cb.equal(root.get("id"), id));
       if (hotelId != null) predicates.add(cb.equal(root.get("hotel").get("id"), hotelId));
       if (imageUrl != null && !imageUrl.isBlank())
         predicates.add(cb.like(cb.lower(root.get("imageUrl")), "%" + imageUrl.toLowerCase() + "%"));
       if (isPrimary != null) predicates.add(cb.equal(root.get("isPrimary"), isPrimary));
-      if (sortOrder != null) predicates.add(cb.equal(root.get("sortOrder"), sortOrder));
-      if (delIf != null) predicates.add(cb.equal(root.get("delIf"), delIf));
+      if (sortOrderFrom != null)
+        predicates.add(cb.greaterThanOrEqualTo(root.get("sortOrder"), sortOrderFrom));
+      if (sortOrderTo != null)
+        predicates.add(cb.lessThanOrEqualTo(root.get("sortOrder"), sortOrderTo));
       if (createdAtFrom != null)
         predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), createdAtFrom));
       if (createdAtTo != null)

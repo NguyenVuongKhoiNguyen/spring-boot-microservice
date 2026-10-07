@@ -61,7 +61,7 @@ class BookingNotificationRepositoryTest {
       Page<BookingNotification> result =
           repository.findAll(
               BookingNotificationSpecification.filter(
-                  null, null, null, null, null, null, null, null, null, null, null, null),
+                  null, null, null, null, null, null, null, null, null, null, null),
               PageRequest.of(0, 10));
 
       assertThat(result.getContent()).hasSize(2);
@@ -75,7 +75,7 @@ class BookingNotificationRepositoryTest {
       Page<BookingNotification> result =
           repository.findAll(
               BookingNotificationSpecification.filter(
-                  null, null, "Welcome", null, null, null, null, null, null, null, null, null),
+                  null, null, "Welcome", null, null, null, null, null, null, null, null),
               PageRequest.of(0, 10));
 
       assertThat(result.getContent()).hasSize(1);

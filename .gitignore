@@ -49,6 +49,7 @@ out/
 !/user/
 !/.gitignore
 !/.githooks/
+!/.github
 !/.dockers
 !/.migrations
 !/.keycloak

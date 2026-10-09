@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  repo-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: .env must not be committed
+        run: test -z "$(git ls-files .env)"
+
+  migrations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { service: user, db: user }
+          - { service: hotel, db: booking }
+          - { service: payment, db: payment }
+          - { service: notification, db: notification }
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: ${{ matrix.db }}
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci-only-password
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ci -d ${{ matrix.db }}"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply ${{ matrix.service }} migrations to an empty database
+        run: >
+          docker run --rm --network host
+          -e FLYWAY_URL=jdbc:postgresql://localhost:5432/${{ matrix.db }}
+          -e FLYWAY_USER=ci -e FLYWAY_PASSWORD=ci-only-password
+          -e FLYWAY_PLACEHOLDERS_MCP_PASSWORD=ci-only
+          -v "${{ github.workspace }}/${{ matrix.service }}/src/main/resources/db/migration:/flyway/sql:ro"
+          flyway/flyway:10 migrate
+
+  services:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [user, hotel, payment, notification, minio]
+    defaults:
+      run:
+        working-directory: ${{ matrix.service }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - run: chmod +x gradlew
+      - run: ./gradlew spotlessCheck
+      - run: ./gradlew test
+      - run: ./gradlew integrationTest
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-${{ matrix.service }}
+          path: ${{ matrix.service }}/build/reports/tests
+
+  infra-modules:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [api-gateway, discovery-server]
+    defaults:
+      run:
+        working-directory: ${{ matrix.service }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - run: chmod +x gradlew
+      - run: ./gradlew build -x test

@@ -5,8 +5,6 @@ import static org.mockito.Mockito.*;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,7 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -66,7 +63,8 @@ class JwtGlobalFilterTest {
 
     jwtGlobalFilter.doFilterInternal(request, response, filterChain);
 
-    ArgumentCaptor<HttpServletRequest> reqCaptor = ArgumentCaptor.forClass(HttpServletRequest.class);
+    ArgumentCaptor<HttpServletRequest> reqCaptor =
+        ArgumentCaptor.forClass(HttpServletRequest.class);
     verify(filterChain).doFilter(reqCaptor.capture(), eq(response));
 
     HttpServletRequest mutatedReq = reqCaptor.getValue();

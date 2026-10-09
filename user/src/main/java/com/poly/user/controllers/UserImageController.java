@@ -29,4 +29,35 @@ public class UserImageController {
     return service.filterAndPaginate(
         id, userId, imageUrl, delIf, createdAtFrom, createdAtTo, pageable);
   }
+
+  @GetMapping("/{id}")
+  public org.springframework.http.ResponseEntity<UserImageResponse> getById(
+      @org.springframework.web.bind.annotation.PathVariable Long id) {
+    return org.springframework.http.ResponseEntity.ok(service.getById(id));
+  }
+
+  @org.springframework.web.bind.annotation.PostMapping
+  public org.springframework.http.ResponseEntity<UserImageResponse> create(
+      @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody
+          com.poly.user.dtos.requests.UserImageRequest request) {
+    UserImageResponse response = service.create(request);
+    return org.springframework.http.ResponseEntity.status(
+            org.springframework.http.HttpStatus.CREATED)
+        .body(response);
+  }
+
+  @org.springframework.web.bind.annotation.PutMapping("/{id}")
+  public org.springframework.http.ResponseEntity<UserImageResponse> update(
+      @org.springframework.web.bind.annotation.PathVariable Long id,
+      @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody
+          com.poly.user.dtos.requests.UserImageRequest request) {
+    return org.springframework.http.ResponseEntity.ok(service.update(id, request));
+  }
+
+  @org.springframework.web.bind.annotation.DeleteMapping("/{id}")
+  public org.springframework.http.ResponseEntity<Void> delete(
+      @org.springframework.web.bind.annotation.PathVariable Long id) {
+    service.delete(id);
+    return org.springframework.http.ResponseEntity.noContent().build();
+  }
 }

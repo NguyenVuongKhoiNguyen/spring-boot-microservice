@@ -41,4 +41,35 @@ public class DeviceTokenController {
         updatedAtTo,
         pageable);
   }
+
+  @GetMapping("/{id}")
+  public org.springframework.http.ResponseEntity<DeviceTokenResponse> getById(
+      @org.springframework.web.bind.annotation.PathVariable Long id) {
+    return org.springframework.http.ResponseEntity.ok(service.getById(id));
+  }
+
+  @org.springframework.web.bind.annotation.PostMapping
+  public org.springframework.http.ResponseEntity<DeviceTokenResponse> create(
+      @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody
+          com.poly.user.dtos.requests.DeviceTokenRequest request) {
+    DeviceTokenResponse response = service.create(request);
+    return org.springframework.http.ResponseEntity.status(
+            org.springframework.http.HttpStatus.CREATED)
+        .body(response);
+  }
+
+  @org.springframework.web.bind.annotation.PutMapping("/{id}")
+  public org.springframework.http.ResponseEntity<DeviceTokenResponse> update(
+      @org.springframework.web.bind.annotation.PathVariable Long id,
+      @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody
+          com.poly.user.dtos.requests.DeviceTokenRequest request) {
+    return org.springframework.http.ResponseEntity.ok(service.update(id, request));
+  }
+
+  @org.springframework.web.bind.annotation.DeleteMapping("/{id}")
+  public org.springframework.http.ResponseEntity<Void> delete(
+      @org.springframework.web.bind.annotation.PathVariable Long id) {
+    service.delete(id);
+    return org.springframework.http.ResponseEntity.noContent().build();
+  }
 }

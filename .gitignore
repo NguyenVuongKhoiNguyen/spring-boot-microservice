@@ -38,11 +38,6 @@ out/
 ### VS Code ###
 .vscode/
 
-### Python ###
-.venv/
-scraping.py
-seeding.py
-
 ### Root level files outside of services ###
 /*
 !/api-gateway/
@@ -54,3 +49,5 @@ seeding.py
 !/user/
 !/.gitignore
 !/.githooks/
+!/.dockers
+!/.migrations

@@ -7,7 +7,7 @@ spring:
   config:
     import: optional:file:../.env[.properties]
   datasource:
-    url: jdbc:postgresql://localhost:${POSTGRES_PORT}/payment
+    url: jdbc:postgresql://localhost:${PAYMENT_DB_PORT}/${PAYMENT_DB_NAME}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
   flyway:
@@ -26,3 +26,19 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
+
+sepay:
+  account:
+    number: ${SEPAY_ACCOUNT_NUMBER}
+    name: ${SEPAY_ACCOUNT_NAME}
+  bank:
+    id: ${SEPAY_BANK_ID}
+  webhook:
+    api:
+      key: ${SEPAY_WEBHOOK_API_KEY}
+
+payment:
+  code:
+    prefix: ${PAYMENT_CODE_PREFIX:BKG}
+  qr:
+    template: ${QR_TEMPLATE:compact2}

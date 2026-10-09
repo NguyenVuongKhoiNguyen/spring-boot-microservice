@@ -28,7 +28,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 class BookingPaymentControllerTest {
 
   @Container @ServiceConnection
-  static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
+  static PostgreSQLContainer<?> postgres =
+      new PostgreSQLContainer<>("postgres:16-alpine").withDatabaseName("payment");
 
   @Autowired private MockMvc mockMvc;
   @Autowired private BookingPaymentRepository repository;

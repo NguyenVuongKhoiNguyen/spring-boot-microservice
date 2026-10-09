@@ -29,6 +29,7 @@ import org.springframework.data.jpa.domain.Specification;
 class UserImageServiceTest {
 
   @Mock private UserImageRepository repository;
+  @Mock private com.poly.user.repositories.UserRepository userRepository;
   @Mock private UserImageMapper mapper;
   @InjectMocks private UserImageService service;
 
@@ -64,5 +65,54 @@ class UserImageServiceTest {
 
       assertThat(result.getContent()).isEmpty();
     }
+  }
+
+  @Test
+  void getById_returnsUserImage() {
+    UserImage userImage = UserImage.builder().id(1L).delIf(false).build();
+    when(repository.findById(1L)).thenReturn(java.util.Optional.of(userImage));
+    when(mapper.toResponse(userImage)).thenReturn(new UserImageResponse(1L, 100L, "url"));
+    UserImageResponse result = service.getById(1L);
+    assertThat(result.id()).isEqualTo(1L);
+  }
+
+  @Test
+  void create_savesAndReturnsUserImage() {
+    com.poly.user.dtos.requests.UserImageRequest request =
+        new com.poly.user.dtos.requests.UserImageRequest(100L, "url");
+    UserImage userImage = UserImage.builder().build();
+    User user = User.builder().id(100L).delIf(false).build();
+    when(mapper.toEntity(request)).thenReturn(userImage);
+    when(userRepository.findById(100L)).thenReturn(java.util.Optional.of(user));
+    when(repository.save(any(UserImage.class))).thenReturn(userImage);
+    when(mapper.toResponse(any(UserImage.class)))
+        .thenReturn(new UserImageResponse(1L, 100L, "url"));
+
+    UserImageResponse result = service.create(request);
+    assertThat(result.id()).isEqualTo(1L);
+  }
+
+  @Test
+  void update_updatesAndReturnsUserImage() {
+    com.poly.user.dtos.requests.UserImageRequest request =
+        new com.poly.user.dtos.requests.UserImageRequest(100L, "url");
+    UserImage userImage = UserImage.builder().id(1L).delIf(false).build();
+    User user = User.builder().id(100L).delIf(false).build();
+    when(repository.findById(1L)).thenReturn(java.util.Optional.of(userImage));
+    when(userRepository.findById(100L)).thenReturn(java.util.Optional.of(user));
+    when(repository.save(any(UserImage.class))).thenReturn(userImage);
+    when(mapper.toResponse(any(UserImage.class)))
+        .thenReturn(new UserImageResponse(1L, 100L, "url"));
+
+    UserImageResponse result = service.update(1L, request);
+    assertThat(result.id()).isEqualTo(1L);
+  }
+
+  @Test
+  void delete_setsDelIfTrue() {
+    UserImage userImage = UserImage.builder().id(1L).delIf(false).build();
+    when(repository.findById(1L)).thenReturn(java.util.Optional.of(userImage));
+    service.delete(1L);
+    assertThat(userImage.getDelIf()).isTrue();
   }
 }

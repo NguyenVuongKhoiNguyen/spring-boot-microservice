@@ -38,6 +38,9 @@ public class BookingPayment {
   @Column(name = "paid_at")
   private Instant paidAt;
 
+  @Column(name = "payment_code", length = 50)
+  private String paymentCode;
+
   @Column(name = "del_if", nullable = false)
   private Boolean delIf;
 

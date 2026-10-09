@@ -28,7 +28,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 class BookingPaymentRepositoryTest {
 
   @Container @ServiceConnection
-  static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
+  static PostgreSQLContainer<?> postgres =
+      new PostgreSQLContainer<>("postgres:16-alpine").withDatabaseName("payment");
 
   @Autowired private BookingPaymentRepository repository;
   @Autowired private TestEntityManager em;
@@ -40,7 +41,7 @@ class BookingPaymentRepositoryTest {
             .amount(amount)
             .paymentMethod(method)
             .status("PAID")
-            .transactionId("TX123")
+            .transactionId(java.util.UUID.randomUUID().toString())
             .delIf(false)
             .createdAt(Instant.now())
             .updatedAt(Instant.now())

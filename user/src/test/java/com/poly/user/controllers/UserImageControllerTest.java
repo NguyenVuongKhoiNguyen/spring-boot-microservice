@@ -25,6 +25,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Testcontainers
+@org.springframework.test.annotation.DirtiesContext(
+    classMode = org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_CLASS)
 class UserImageControllerTest {
 
   @Container @ServiceConnection
@@ -33,6 +35,13 @@ class UserImageControllerTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private UserRepository userRepository;
   @Autowired private UserImageRepository repository;
+  @Autowired private com.poly.user.security.JwtService jwtService;
+
+  private String getToken(User user) {
+    com.poly.user.security.CustomUserDetails details =
+        new com.poly.user.security.CustomUserDetails(user, java.util.List.of("ROLE_ADMIN"));
+    return jwtService.generateAccessToken(details);
+  }
 
   @BeforeEach
   void setUp() {
@@ -64,11 +73,119 @@ class UserImageControllerTest {
     repository.save(image);
 
     mockMvc
-        .perform(get("/api/userimages").param("page", "0").param("size", "10"))
+        .perform(
+            get("/api/userimages")
+                .param("page", "0")
+                .param("size", "10")
+                .cookie(new jakarta.servlet.http.Cookie("access_token", getToken(user))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content.length()").value(1))
         .andExpect(jsonPath("$.content[0].imageUrl").value("url1"))
         .andExpect(jsonPath("$.totalElements").value(1));
+  }
+
+  @Test
+  void getById_returnsUserImage() throws Exception {
+    User user =
+        User.builder()
+            .email("b@b.com")
+            .passwordHash("hash")
+            .fullName("Full Name")
+            .active(true)
+            .delIf(false)
+            .build();
+    user = userRepository.save(user);
+
+    UserImage image = UserImage.builder().user(user).imageUrl("url2").delIf(false).build();
+    image = repository.save(image);
+
+    mockMvc
+        .perform(
+            get("/api/userimages/" + image.getId())
+                .cookie(new jakarta.servlet.http.Cookie("access_token", getToken(user))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.imageUrl").value("url2"));
+  }
+
+  @Test
+  void create_returnsCreatedUserImage() throws Exception {
+    User user =
+        User.builder()
+            .email("c@c.com")
+            .passwordHash("hash")
+            .fullName("Full Name")
+            .active(true)
+            .delIf(false)
+            .build();
+    user = userRepository.save(user);
+
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
+                    "/api/userimages")
+                .cookie(new jakarta.servlet.http.Cookie("access_token", getToken(user)))
+                .with(
+                    org.springframework.security.test.web.servlet.request
+                        .SecurityMockMvcRequestPostProcessors.csrf())
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("{\"userId\":" + user.getId() + ",\"imageUrl\":\"url3\"}"))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.imageUrl").value("url3"));
+  }
+
+  @Test
+  void update_returnsUpdatedUserImage() throws Exception {
+    User user =
+        User.builder()
+            .email("d@d.com")
+            .passwordHash("hash")
+            .fullName("Full Name")
+            .active(true)
+            .delIf(false)
+            .build();
+    user = userRepository.save(user);
+
+    UserImage image = UserImage.builder().user(user).imageUrl("url4").delIf(false).build();
+    image = repository.save(image);
+
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put(
+                    "/api/userimages/" + image.getId())
+                .cookie(new jakarta.servlet.http.Cookie("access_token", getToken(user)))
+                .with(
+                    org.springframework.security.test.web.servlet.request
+                        .SecurityMockMvcRequestPostProcessors.csrf())
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("{\"userId\":" + user.getId() + ",\"imageUrl\":\"url5\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.imageUrl").value("url5"));
+  }
+
+  @Test
+  void delete_returnsNoContent() throws Exception {
+    User user =
+        User.builder()
+            .email("f@f.com")
+            .passwordHash("hash")
+            .fullName("Full Name")
+            .active(true)
+            .delIf(false)
+            .build();
+    user = userRepository.save(user);
+
+    UserImage image = UserImage.builder().user(user).imageUrl("url6").delIf(false).build();
+    image = repository.save(image);
+
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete(
+                    "/api/userimages/" + image.getId())
+                .cookie(new jakarta.servlet.http.Cookie("access_token", getToken(user)))
+                .with(
+                    org.springframework.security.test.web.servlet.request
+                        .SecurityMockMvcRequestPostProcessors.csrf()))
+        .andExpect(status().isNoContent());
   }
 }

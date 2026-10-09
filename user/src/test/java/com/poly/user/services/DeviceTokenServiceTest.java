@@ -29,6 +29,7 @@ import org.springframework.data.jpa.domain.Specification;
 class DeviceTokenServiceTest {
 
   @Mock private DeviceTokenRepository repository;
+  @Mock private com.poly.user.repositories.UserRepository userRepository;
   @Mock private DeviceTokenMapper mapper;
   @InjectMocks private DeviceTokenService service;
 
@@ -75,5 +76,55 @@ class DeviceTokenServiceTest {
 
       assertThat(result.getContent()).isEmpty();
     }
+  }
+
+  @Test
+  void getById_returnsDeviceToken() {
+    DeviceToken deviceToken = DeviceToken.builder().id(1L).delIf(false).build();
+    when(repository.findById(1L)).thenReturn(java.util.Optional.of(deviceToken));
+    when(mapper.toResponse(deviceToken))
+        .thenReturn(new DeviceTokenResponse(1L, 100L, "token", "IOS"));
+    DeviceTokenResponse result = service.getById(1L);
+    assertThat(result.id()).isEqualTo(1L);
+  }
+
+  @Test
+  void create_savesAndReturnsDeviceToken() {
+    com.poly.user.dtos.requests.DeviceTokenRequest request =
+        new com.poly.user.dtos.requests.DeviceTokenRequest(100L, "token", "IOS");
+    DeviceToken deviceToken = DeviceToken.builder().build();
+    User user = User.builder().id(100L).delIf(false).build();
+    when(mapper.toEntity(request)).thenReturn(deviceToken);
+    when(userRepository.findById(100L)).thenReturn(java.util.Optional.of(user));
+    when(repository.save(any(DeviceToken.class))).thenReturn(deviceToken);
+    when(mapper.toResponse(any(DeviceToken.class)))
+        .thenReturn(new DeviceTokenResponse(1L, 100L, "token", "IOS"));
+
+    DeviceTokenResponse result = service.create(request);
+    assertThat(result.id()).isEqualTo(1L);
+  }
+
+  @Test
+  void update_updatesAndReturnsDeviceToken() {
+    com.poly.user.dtos.requests.DeviceTokenRequest request =
+        new com.poly.user.dtos.requests.DeviceTokenRequest(100L, "token", "IOS");
+    DeviceToken deviceToken = DeviceToken.builder().id(1L).delIf(false).build();
+    User user = User.builder().id(100L).delIf(false).build();
+    when(repository.findById(1L)).thenReturn(java.util.Optional.of(deviceToken));
+    when(userRepository.findById(100L)).thenReturn(java.util.Optional.of(user));
+    when(repository.save(any(DeviceToken.class))).thenReturn(deviceToken);
+    when(mapper.toResponse(any(DeviceToken.class)))
+        .thenReturn(new DeviceTokenResponse(1L, 100L, "token", "IOS"));
+
+    DeviceTokenResponse result = service.update(1L, request);
+    assertThat(result.id()).isEqualTo(1L);
+  }
+
+  @Test
+  void delete_setsDelIfTrue() {
+    DeviceToken deviceToken = DeviceToken.builder().id(1L).delIf(false).build();
+    when(repository.findById(1L)).thenReturn(java.util.Optional.of(deviceToken));
+    service.delete(1L);
+    assertThat(deviceToken.getDelIf()).isTrue();
   }
 }

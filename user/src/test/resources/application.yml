@@ -3,11 +3,19 @@ spring:
     name: user
   main:
     allow-bean-definition-overriding: true
+  cache:
+    type: none
   datasource:
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
   jpa:
     hibernate:
       ddl-auto: create-drop
+
+app:
+  cache:
+    ttl:
+      user-profile: 10m
+      user-list: 2m
 
 jwt:
   secret: a-very-long-test-secret-key-that-is-at-least-32-bytes
@@ -17,3 +25,8 @@ jwt:
 eureka:
   client:
     enabled: false
+logging:
+  level:
+    org.springframework.cache: TRACE
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

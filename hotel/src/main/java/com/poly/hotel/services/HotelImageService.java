@@ -12,6 +12,9 @@ import com.poly.hotel.repositories.HotelImageSpecification;
 import com.poly.hotel.repositories.HotelRepository;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,6 +28,7 @@ public class HotelImageService {
   private final HotelImageMapper mapper;
 
   @Transactional(readOnly = true)
+  @Cacheable(value = "hotelimage-list", keyGenerator = "listKeyGenerator")
   public PageResponse<HotelImageResponse> filterAndPaginate(
       Long id,
       Long hotelId,
@@ -51,6 +55,7 @@ public class HotelImageService {
   }
 
   @Transactional(readOnly = true)
+  @Cacheable(value = "hotelimage-detail", key = "#id")
   public HotelImageResponse getById(Long id) {
     HotelImage image =
         repository
@@ -61,6 +66,7 @@ public class HotelImageService {
   }
 
   @Transactional
+  @CacheEvict(value = "hotelimage-list", allEntries = true)
   public HotelImageResponse create(HotelImageRequest request) {
     Hotel hotel =
         hotelRepository
@@ -76,6 +82,11 @@ public class HotelImageService {
   }
 
   @Transactional
+  @Caching(
+      evict = {
+        @CacheEvict(value = "hotelimage-detail", key = "#id"),
+        @CacheEvict(value = "hotelimage-list", allEntries = true)
+      })
   public HotelImageResponse update(Long id, HotelImageRequest request) {
     HotelImage image =
         repository
@@ -95,6 +106,11 @@ public class HotelImageService {
   }
 
   @Transactional
+  @Caching(
+      evict = {
+        @CacheEvict(value = "hotelimage-detail", key = "#id"),
+        @CacheEvict(value = "hotelimage-list", allEntries = true)
+      })
   public void delete(Long id) {
     HotelImage image =
         repository

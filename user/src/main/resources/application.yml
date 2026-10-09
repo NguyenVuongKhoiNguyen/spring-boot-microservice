@@ -17,6 +17,10 @@ spring:
     hibernate:
       ddl-auto: validate
   data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
     web:
       pageable:
         max-page-size: 100
@@ -39,3 +43,9 @@ jwt:
 
 cors:
   allowed-origins: http://localhost:3000
+
+app:
+  cache:
+    ttl:
+      user-profile: 10m
+      user-list: 2m

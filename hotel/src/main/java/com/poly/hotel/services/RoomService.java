@@ -16,6 +16,9 @@ import com.poly.hotel.repositories.RoomSpecification;
 import com.poly.hotel.repositories.RoomTypeRepository;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -31,6 +34,7 @@ public class RoomService {
   private final RoomMapper mapper;
 
   @Transactional(readOnly = true)
+  @Cacheable(value = "room-list", keyGenerator = "listKeyGenerator")
   public PageResponse<RoomResponse> filterAndPaginate(
       Long id,
       Long hotelId,
@@ -61,6 +65,7 @@ public class RoomService {
   }
 
   @Transactional(readOnly = true)
+  @Cacheable(value = "room-detail", key = "#id")
   public RoomResponse getById(Long id) {
     Room room =
         repository
@@ -71,6 +76,7 @@ public class RoomService {
   }
 
   @Transactional
+  @CacheEvict(value = "room-list", allEntries = true)
   public RoomResponse create(RoomRequest request) {
     Hotel hotel =
         hotelRepository
@@ -94,6 +100,11 @@ public class RoomService {
   }
 
   @Transactional
+  @Caching(
+      evict = {
+        @CacheEvict(value = "room-detail", key = "#id"),
+        @CacheEvict(value = "room-list", allEntries = true)
+      })
   public RoomResponse update(Long id, RoomRequest request) {
     Room room =
         repository
@@ -121,6 +132,11 @@ public class RoomService {
   }
 
   @Transactional
+  @Caching(
+      evict = {
+        @CacheEvict(value = "room-detail", key = "#id"),
+        @CacheEvict(value = "room-list", allEntries = true)
+      })
   public void delete(Long id) {
     Room room =
         repository

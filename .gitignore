@@ -51,3 +51,4 @@ out/
 !/.githooks/
 !/.dockers
 !/.migrations
+!/.keycloak

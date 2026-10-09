@@ -1,15 +1,22 @@
 package com.poly.user.services;
 
+import com.poly.user.dtos.requests.UserRequest;
 import com.poly.user.dtos.responses.PageResponse;
 import com.poly.user.dtos.responses.UserResponse;
+import com.poly.user.exceptions.ResourceNotFoundException;
 import com.poly.user.mappers.UserMapper;
 import com.poly.user.models.User;
 import com.poly.user.repositories.UserRepository;
 import com.poly.user.repositories.UserRoleRepository;
 import com.poly.user.repositories.UserSpecification;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +30,7 @@ public class UserService {
   private final UserMapper mapper;
   private final PasswordEncoder passwordEncoder;
 
+  @Cacheable(value = "user-list", keyGenerator = "listKeyGenerator")
   public PageResponse<UserResponse> filterAndPaginate(
       Long id,
       String email,
@@ -54,18 +62,18 @@ public class UserService {
     return PageResponse.from(page.map(mapper::toResponse));
   }
 
+  @Cacheable(value = "user-profile", key = "#id")
   public UserResponse getById(Long id) {
     User user =
         repository
             .findById(id)
             .filter(u -> !u.getDelIf())
-            .orElseThrow(
-                () -> new com.poly.user.exceptions.ResourceNotFoundException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
     List<String> roles =
         userRoleRepository.findByUserIdAndDelIfFalse(user.getId()).stream()
             .map(ur -> ur.getRole().getName())
-            .toList();
+            .collect(Collectors.toList());
 
     UserResponse response = mapper.toResponse(user);
     return new UserResponse(
@@ -77,7 +85,8 @@ public class UserService {
         roles);
   }
 
-  public UserResponse create(com.poly.user.dtos.requests.UserRequest request) {
+  @CacheEvict(value = "user-list", allEntries = true)
+  public UserResponse create(UserRequest request) {
     User user = mapper.toEntity(request);
     user.setPasswordHash(passwordEncoder.encode(request.passwordHash()));
     user.setDelIf(false);
@@ -92,16 +101,20 @@ public class UserService {
         response.fullName(),
         response.phone(),
         response.active(),
-        List.of());
+        new ArrayList<>());
   }
 
-  public UserResponse update(Long id, com.poly.user.dtos.requests.UserRequest request) {
+  @Caching(
+      evict = {
+        @CacheEvict(value = "user-profile", key = "#id"),
+        @CacheEvict(value = "user-list", allEntries = true)
+      })
+  public UserResponse update(Long id, UserRequest request) {
     User user =
         repository
             .findById(id)
             .filter(u -> !u.getDelIf())
-            .orElseThrow(
-                () -> new com.poly.user.exceptions.ResourceNotFoundException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
     mapper.updateEntity(request, user);
     user.setPasswordHash(passwordEncoder.encode(request.passwordHash()));
@@ -111,7 +124,7 @@ public class UserService {
     List<String> roles =
         userRoleRepository.findByUserIdAndDelIfFalse(user.getId()).stream()
             .map(ur -> ur.getRole().getName())
-            .toList();
+            .collect(Collectors.toList());
 
     UserResponse response = mapper.toResponse(saved);
     return new UserResponse(
@@ -123,13 +136,17 @@ public class UserService {
         roles);
   }
 
+  @Caching(
+      evict = {
+        @CacheEvict(value = "user-profile", key = "#id"),
+        @CacheEvict(value = "user-list", allEntries = true)
+      })
   public void delete(Long id) {
     User user =
         repository
             .findById(id)
             .filter(u -> !u.getDelIf())
-            .orElseThrow(
-                () -> new com.poly.user.exceptions.ResourceNotFoundException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     user.setDelIf(true);
     user.setUpdatedAt(Instant.now());
     repository.save(user);

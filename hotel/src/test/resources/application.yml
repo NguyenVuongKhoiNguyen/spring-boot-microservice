@@ -1,7 +1,30 @@
 spring:
+  application:
+    name: hotel
+  cache:
+    type: none
   jpa:
     hibernate:
       ddl-auto: create-drop
+
+app:
+  cache:
+    ttl:
+      hotel-detail: 10m
+      hotel-list: 2m
+      hotelimage-detail: 10m
+      hotelimage-list: 2m
+      roomtype-detail: 10m
+      roomtype-list: 2m
+      room-detail: 10m
+      room-list: 2m
+
 eureka:
   client:
     enabled: false
+
+logging:
+  level:
+    org.springframework.cache: TRACE
+    com.poly: DEBUG
+    org.hibernate.SQL: DEBUG

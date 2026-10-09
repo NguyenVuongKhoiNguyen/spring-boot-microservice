@@ -15,6 +15,9 @@ import com.poly.hotel.repositories.RoomTypeSpecification;
 import java.math.BigDecimal;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,6 +32,7 @@ public class RoomTypeService {
   private final RoomTypeMapper mapper;
 
   @Transactional(readOnly = true)
+  @Cacheable(value = "roomtype-list", keyGenerator = "listKeyGenerator")
   public PageResponse<RoomTypeResponse> filterAndPaginate(
       Long id,
       Long hotelId,
@@ -67,6 +71,7 @@ public class RoomTypeService {
   }
 
   @Transactional(readOnly = true)
+  @Cacheable(value = "roomtype-detail", key = "#id")
   public RoomTypeResponse getById(Long id) {
     RoomType roomType =
         repository
@@ -77,6 +82,7 @@ public class RoomTypeService {
   }
 
   @Transactional
+  @CacheEvict(value = "roomtype-list", allEntries = true)
   public RoomTypeResponse create(RoomTypeRequest request) {
     Hotel hotel =
         hotelRepository
@@ -93,6 +99,11 @@ public class RoomTypeService {
   }
 
   @Transactional
+  @Caching(
+      evict = {
+        @CacheEvict(value = "roomtype-detail", key = "#id"),
+        @CacheEvict(value = "roomtype-list", allEntries = true)
+      })
   public RoomTypeResponse update(Long id, RoomTypeRequest request) {
     RoomType roomType =
         repository
@@ -113,6 +124,13 @@ public class RoomTypeService {
   }
 
   @Transactional
+  @Caching(
+      evict = {
+        @CacheEvict(value = "roomtype-detail", key = "#id"),
+        @CacheEvict(value = "roomtype-list", allEntries = true),
+        @CacheEvict(value = "room-list", allEntries = true),
+        @CacheEvict(value = "room-detail", allEntries = true)
+      })
   public void delete(Long id) {
     RoomType roomType =
         repository

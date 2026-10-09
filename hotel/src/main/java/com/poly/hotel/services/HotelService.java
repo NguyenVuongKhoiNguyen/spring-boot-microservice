@@ -20,6 +20,9 @@ import java.time.Instant;
 import java.time.LocalTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -36,6 +39,7 @@ public class HotelService {
   private final RoomRepository roomRepository;
 
   @Transactional(readOnly = true)
+  @Cacheable(value = "hotel-list", keyGenerator = "listKeyGenerator")
   public PageResponse<HotelResponse> filterAndPaginate(
       Long id,
       String name,
@@ -84,6 +88,7 @@ public class HotelService {
   }
 
   @Transactional(readOnly = true)
+  @Cacheable(value = "hotel-detail", key = "#id")
   public HotelResponse getById(Long id) {
     Hotel hotel =
         repository
@@ -94,6 +99,7 @@ public class HotelService {
   }
 
   @Transactional
+  @CacheEvict(value = "hotel-list", allEntries = true)
   public HotelResponse create(HotelRequest request) {
     Hotel hotel = mapper.toEntity(request);
     hotel.setDelIf(false);
@@ -103,6 +109,11 @@ public class HotelService {
   }
 
   @Transactional
+  @Caching(
+      evict = {
+        @CacheEvict(value = "hotel-detail", key = "#id"),
+        @CacheEvict(value = "hotel-list", allEntries = true)
+      })
   public HotelResponse update(Long id, HotelRequest request) {
     Hotel hotel =
         repository
@@ -115,6 +126,17 @@ public class HotelService {
   }
 
   @Transactional
+  @Caching(
+      evict = {
+        @CacheEvict(value = "hotel-detail", key = "#id"),
+        @CacheEvict(value = "hotel-list", allEntries = true),
+        @CacheEvict(value = "hotelimage-list", allEntries = true),
+        @CacheEvict(value = "hotelimage-detail", allEntries = true),
+        @CacheEvict(value = "roomtype-list", allEntries = true),
+        @CacheEvict(value = "roomtype-detail", allEntries = true),
+        @CacheEvict(value = "room-list", allEntries = true),
+        @CacheEvict(value = "room-detail", allEntries = true)
+      })
   public void delete(Long id) {
     Hotel hotel =
         repository
